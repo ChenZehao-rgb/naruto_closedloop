@@ -1,0 +1,7 @@
+<launch>
+    <!-- 加载参数文件 -->
+    <rosparam file="$(find naruto_closedloop)/config/params.yaml" command="load" />
+
+    <!-- 启动节点 -->
+    <node name="position_control" pkg="naruto_closedloop" type="position_control" output="screen" />
+</launch>

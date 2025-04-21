@@ -1,0 +1,6 @@
+sensor_x: 0.0
+sensor_y: 0.0
+sensor_z: 0.0
+range_z: 400.0
+arm_y0: 0.0
+arm_z0: 0.0
