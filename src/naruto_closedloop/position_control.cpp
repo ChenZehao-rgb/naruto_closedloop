@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
     // ros::AsyncSpinner spinner(2);
     // spinner.start();
 
-    ros::Rate rate(30); // 控制频率
+    ros::Rate rate(15); // 控制频率
     while (ros::ok()) {
         ros::spinOnce();
         position_control.updateControl();
