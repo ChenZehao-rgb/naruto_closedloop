@@ -3,7 +3,10 @@
 
 #include <ros/ros.h>
 #include <geometry_msgs/Pose.h>
-#include <mavros_msgs/PositionTarget.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Matrix3x3.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <std_msgs/UInt16.h>
 class PositionControl {
 public:
     PositionControl(ros::NodeHandle& nh);
@@ -23,15 +26,23 @@ private:
 
     struct Measure {
         bool is_valid;
+        bool is_valid_prev;
         double x;
         double y;
         double z;
     } measure;
 
     double x1_, y1_, z1_, range_z; // 传感器安装位置
+    tf2::Vector3 sensor_install_body_vec_; // 传感器安装位置向量
+    tf2::Vector3 arm_ee_body_vec_; // 机械臂末端位置向量
+    tf2::Matrix3x3 initial_rotation_; // 初始旋转矩阵
+    bool initialized_ = false; // 是否已初始化
     double y0_, z0_;      // 机械臂初始末端位置
     bool is_convert_mm_to_m_ = true; // 是否需要转换单位
+    double max_compensate_; // 最大补偿量
+    double alpha_; // 低通滤波系数
     void sensorDataCallback(const geometry_msgs::Pose::ConstPtr& msg);
+    void sensorDataCallback(const std_msgs::UInt16& msg);
     void fkCartCallback(const geometry_msgs::Pose::ConstPtr& msg);
     void uavLocalposCallback(const geometry_msgs::Pose::ConstPtr& msg);
     void uavPositionControl();
