@@ -3,6 +3,7 @@
 
 #include <ros/ros.h>
 #include <geometry_msgs/Pose.h>
+#include <sensor_msgs/Imu.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -39,12 +40,14 @@ private:
     bool initialized_ = false; // 是否已初始化
     double y0_, z0_;      // 机械臂初始末端位置
     bool is_convert_mm_to_m_ = true; // 是否需要转换单位
+    bool test_indoor_ = false; // 是否为室内测试
     double max_compensate_; // 最大补偿量
     double alpha_; // 低通滤波系数
     void sensorDataCallback(const geometry_msgs::Pose::ConstPtr& msg);
     void sensorDataCallback(const std_msgs::UInt16& msg);
     void fkCartCallback(const geometry_msgs::Pose::ConstPtr& msg);
     void uavLocalposCallback(const geometry_msgs::Pose::ConstPtr& msg);
+    void uavLocalposCallback(const sensor_msgs::Imu::ConstPtr& msg);
     void uavPositionControl();
     void manipulatorPositionControl();
 };

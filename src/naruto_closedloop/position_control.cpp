@@ -11,15 +11,20 @@ PositionControl::PositionControl(ros::NodeHandle& nh) : nh_(nh), measure{false, 
     nh_.param("arm_z0", arm_ee_body_vec_[2], 0.0);
     nh_.param("compensate_max", max_compensate_, 0.05);  // 最大5cm补偿量
     nh_.param("alpha_filter", alpha_, 0.8); // 低通滤波系数
-
+    nh_.param("test_indoor", test_indoor_, false); // 是否在室内测试
     // 订阅相机反馈数据
     // sensor_data_sub_ = nh_.subscribe("/transform/sensor_data", 10, &PositionControl::sensorDataCallback, this);
     sensor_data_sub_ = nh_.subscribe("sensor/distance", 10, &PositionControl::sensorDataCallback, this);
     // 订阅机械臂末端位置
     endEffectorSub_ = nh_.subscribe("/naruto_pinocchio/fk_cart", 1, &PositionControl::fkCartCallback, this);
     endEffectorPub_ = nh_.advertise<geometry_msgs::Pose>("/naruto_position_control/ee", 1);
-    // sub uav local position
-    uavLocalPosSub_ = nh_.subscribe("/mavros/local_position/pose", 1, &PositionControl::uavLocalposCallback, this);
+    if(test_indoor_) {
+        // if no gps, sub imu
+        uavLocalPosSub_ = nh_.subscribe<sensor_msgs::Imu>("/mavros/imu/data", 1, &PositionControl::uavLocalposCallback, this);
+    } else {
+        // 订阅无人机位姿
+        uavLocalPosSub_ = nh_.subscribe<geometry_msgs::Pose>("/mavros/local_position/pose", 1, &PositionControl::uavLocalposCallback, this);
+    }
     // 发布无人机目标位置
     position_pub_ = nh_.advertise<geometry_msgs::Pose>("/naruto_position_control/uav", 10);
 }
@@ -82,6 +87,10 @@ void PositionControl::fkCartCallback(const geometry_msgs::Pose::ConstPtr& msg) {
 void PositionControl::uavLocalposCallback(const geometry_msgs::Pose::ConstPtr& msg) {
     // 更新当前无人机位姿
     current_uav_local_pos_ = *msg;
+}
+void PositionControl::uavLocalposCallback(const sensor_msgs::Imu::ConstPtr& msg) {
+    // 更新当前无人机位姿
+    current_uav_local_pos_.orientation = msg->orientation;
 }
 void PositionControl::uavPositionControl() {
     // 发布无人机目标位置
